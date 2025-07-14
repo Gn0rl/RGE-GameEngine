@@ -12,6 +12,7 @@ export class Scene {
             object.forEach((obj) => {
                 this.objects.push(obj);
             })
+
             return this
         }
 
