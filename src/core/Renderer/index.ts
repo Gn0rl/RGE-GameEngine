@@ -1,4 +1,4 @@
-import { Camera } from "@core/Camera"
+import { Camera } from "../Camera"
 import fsSource from "./shaders/frag.glsl"
 import vsSource from "./shaders/vert.glsl"
 import type { GameObject } from "../GameObject"
@@ -89,7 +89,7 @@ export class Renderer {
                 1,0,0,0,
                 0,1,0,0,
                 0,0,1,0,
-                this.camera.posX,this.camera.posY,0,1
+                -this.camera.posX,-this.camera.posY,0,1
             ])
 
             const uMatrix = gl.getUniformLocation(this.shaderProgram, 'matrix')
