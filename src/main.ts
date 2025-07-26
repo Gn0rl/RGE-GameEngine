@@ -7,7 +7,7 @@ let scene = new Scene()
         // .addObject(new GameObject("World").log("Hello"))
         // .addObject(new GameObject('Hi', 0.3, 0.3))
 
-for(let i = 0; i <= 1000; i++) {
+for(let i = 0; i <= 10; i++) {
     scene.addObject(new GameObject(`obj${i}`, Math.random()*2 - 1, Math.random()*2 - 1))
 }
 
