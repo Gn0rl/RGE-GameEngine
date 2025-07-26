@@ -18,9 +18,9 @@ let renderer = new Renderer(camera)
 let fps = 0;
 
 function Update() {
-    fps++   
+    fps++
     
-    // camera.posX += 1;
+    camera.posX += 0.01;
 
     if(camera.posX > 2.2)
         camera.posX = -2
