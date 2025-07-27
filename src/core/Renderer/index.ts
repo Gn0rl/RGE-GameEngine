@@ -25,7 +25,6 @@ export class Renderer {
         
         this.app = gl
 
-        // Initialize shaders
         const vertexShader = gl.createShader(gl.VERTEX_SHADER)
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
         
@@ -39,18 +38,15 @@ export class Renderer {
             throw new Error("Shaders can't be created")
         }
 
-        // Create shader program
         this.shaderProgram = gl.createProgram()
         gl.attachShader(this.shaderProgram, vertexShader)
         gl.attachShader(this.shaderProgram, fragmentShader)
         gl.linkProgram(this.shaderProgram)
         gl.useProgram(this.shaderProgram)
 
-        // Create vertex buffer
         this.vertexBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
 
-        // Set clear color
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
 
         this.render()
@@ -73,15 +69,13 @@ export class Renderer {
         const items = this.camera.scene.objects
         
         items.forEach((obj: GameObject) => {
-            // Устанавливаем позицию квадрата
             const vertices = new Float32Array([
                 obj.posX - 0.01, obj.posY + 0.01,
                 obj.posX - 0.01, obj.posY - 0.01,
                 obj.posX + 0.01, obj.posY - 0.01,
                 obj.posX + 0.01, obj.posY + 0.01
             ])
-            
-            // Обновляем буфер вершин
+
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
             
@@ -95,12 +89,10 @@ export class Renderer {
             const uMatrix = gl.getUniformLocation(this.shaderProgram, 'matrix')
             gl.uniformMatrix4fv(uMatrix,false, matrix)
 
-            // Устанавливаем атрибут позиции
             const position = gl.getAttribLocation(this.shaderProgram, 'vertexPosition')
             gl.enableVertexAttribArray(position)
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
 
-            // Рисуем квадрат
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
         })
     }
