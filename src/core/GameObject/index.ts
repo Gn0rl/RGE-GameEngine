@@ -9,7 +9,7 @@ export class GameObject {
         this.posY = posY
     }
 
-    log(log) {
+    log(log: any) {
         console.log(this.name + " says: " + log)
 
         return this

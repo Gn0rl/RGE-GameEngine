@@ -1,4 +1,4 @@
-import { GameObject } from "@core/GameObject"
+import { GameObject } from "../GameObject"
 
 export class Scene {
     objects: Array<GameObject>
