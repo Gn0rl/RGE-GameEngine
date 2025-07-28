@@ -10,10 +10,14 @@ export class Renderer {
 
     private shaderProgram: WebGLProgram
     private vertexBuffer: WebGLBuffer
+    private colorBuffer: WebGLBuffer
+    private resScale: number
 
     constructor(camera: Camera) {
         this.camera = camera
         
+        this.resScale = window.innerWidth / window.innerHeight
+
         const canvas = document.getElementById('view') as HTMLCanvasElement
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
@@ -47,6 +51,9 @@ export class Renderer {
         this.vertexBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
 
+        this.colorBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
 
         this.render()
@@ -76,22 +83,40 @@ export class Renderer {
                 obj.posX + 0.01, obj.posY + 0.01
             ])
 
+            const colors = new Float32Array([
+                0.0,0.0,1.0,1.0,
+                1.0,0.0,0.0,1.0,
+                0.0,1.0,0.0,1.0,
+                0.0,0.0,1.0,1.0,
+            ])
+
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
             
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
+            
             const matrix = new Float32Array([
                 1,0,0,0,
-                0,1,0,0,
+                0,this.resScale,0,0,
                 0,0,1,0,
-                -this.camera.posX,-this.camera.posY,0,1
+                -this.camera.posX,-this.camera.posY*this.resScale,0,1
             ])
 
             const uMatrix = gl.getUniformLocation(this.shaderProgram, 'matrix')
             gl.uniformMatrix4fv(uMatrix,false, matrix)
 
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
             const position = gl.getAttribLocation(this.shaderProgram, 'vertexPosition')
             gl.enableVertexAttribArray(position)
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
+            const color = gl.getAttribLocation(this.shaderProgram, 'vertexColor')
+            gl.vertexAttribPointer(color, 4, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(color)
 
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
         })
