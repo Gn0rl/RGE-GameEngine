@@ -2,6 +2,9 @@ import { Camera } from "../Camera"
 import fsSource from "./shaders/frag.glsl"
 import vsSource from "./shaders/vert.glsl"
 import type { GameObject } from "../GameObject"
+import { loadTexture } from "./loadTexture"
+
+import noImage from "../../../noImage.png"
 
 export class Renderer {
     app: WebGLRenderingContext
@@ -12,17 +15,19 @@ export class Renderer {
     private vertexBuffer: WebGLBuffer
     private colorBuffer: WebGLBuffer
     private resScale: number
+    private textureCoordBuffer: WebGLBuffer
+    private textures: Record<string, WebGLTexture>
 
     constructor(camera: Camera) {
         this.camera = camera
-        
+
         this.resScale = window.innerWidth / window.innerHeight
 
         const canvas = document.getElementById('view') as HTMLCanvasElement
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
         const gl = canvas.getContext('webgl')
-        
+
         if (!gl) {
             throw new Error('WebGL not supported in this browser')
         }
@@ -54,18 +59,28 @@ export class Renderer {
         this.colorBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
 
+        this.textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
+
+        this.textures = {
+            nothing: loadTexture(this.app, noImage)
+        }
+
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
 
         this.render()
     }
 
-    init() {
-        return this
-    }
-
     changeCamera(camera: Camera) {
         this.camera = camera
         return this
+    }
+
+    async loadTextures(textures: Record<string, string>) {
+        const textureNames = Object.keys(textures)
+        for(let i = 0; i < textureNames.length; i++) {
+            this.textures[textureNames[i]] = loadTexture(this.app, textures[textureNames[i]])
+        }
     }
 
     render() {
@@ -77,25 +92,12 @@ export class Renderer {
         
         items.forEach((obj: GameObject) => {
             const vertices = new Float32Array([
-                obj.posX - 0.01, obj.posY + 0.01,
-                obj.posX - 0.01, obj.posY - 0.01,
-                obj.posX + 0.01, obj.posY - 0.01,
-                obj.posX + 0.01, obj.posY + 0.01
+                obj.posX - obj.size, obj.posY + obj.size,
+                obj.posX - obj.size, obj.posY - obj.size,
+                obj.posX + obj.size, obj.posY - obj.size,
+                obj.posX + obj.size, obj.posY + obj.size,
             ])
 
-            const colors = new Float32Array([
-                0.0,0.0,1.0,1.0,
-                1.0,0.0,0.0,1.0,
-                0.0,1.0,0.0,1.0,
-                0.0,0.0,1.0,1.0,
-            ])
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
-            
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
-            
             const matrix = new Float32Array([
                 1,0,0,0,
                 0,this.resScale,0,0,
@@ -112,11 +114,35 @@ export class Renderer {
             gl.enableVertexAttribArray(position)
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
-            const color = gl.getAttribLocation(this.shaderProgram, 'vertexColor')
-            gl.vertexAttribPointer(color, 4, gl.FLOAT, false, 0, 0)
-            gl.enableVertexAttribArray(color)
+            const textureCoord = gl.getAttribLocation(this.shaderProgram, 'textureCoord')
+
+            let texture = null
+            if(obj.texture) {
+                texture = this.textures[obj.texture]
+            }
+            if(!obj.texture) {
+                texture = this.textures.nothing
+            }
+
+            const textureCoordinates = [
+                1.0,  0.0,
+                1.0,  1.0,
+                0.0,  1.0,
+                0.0,  0.0,
+            ]
+            
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
+            gl.vertexAttribPointer(textureCoord, 2, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(textureCoord)
+
+            gl.activeTexture(gl.TEXTURE0);
+
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            const sampler = gl.getUniformLocation(this.shaderProgram, 'sampler')
+            gl.uniform1i(sampler, 0);
 
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
         })

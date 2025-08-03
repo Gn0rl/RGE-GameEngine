@@ -1,11 +1,11 @@
 attribute vec3 vertexPosition;
-attribute vec4 vertexColor;
+attribute vec2 textureCoord;
 
 uniform mat4 matrix;
 
-varying lowp vec4 vColor;
+varying highp vec2 vTextureCoord;
 
 void main(void) {
     gl_Position = matrix * vec4(vertexPosition, 1.0);
-    vColor = vertexColor;
+    vTextureCoord = textureCoord;
 }
