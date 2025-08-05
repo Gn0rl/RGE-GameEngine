@@ -7,8 +7,6 @@ import { Input } from "./core/Input"
 import image from "../image.png"
 
 let scene = new Scene()
-        // .addObject(new GameObject("World").log("Hello"))
-        // .addObject(new GameObject('Hi', 0.3, 0.3))
 
 let input = new Input()
 let player = new GameObject('player', 0, 0)
@@ -18,10 +16,11 @@ let camera = new Camera("camera", scene)
 
 let renderer = new Renderer(camera)
 
-for(let i = 0; i <= 10; i++) {
+renderer.loadTextures({'test': image})
+
+for(let i = 0; i <= 10000; i++) {
     scene.addObject(new GameObject(`obj${i}`, Math.random()*2 - 1, Math.random()*2 - 1, 0.1, "test"))
 }
-renderer.loadTextures({'test': image})
 
 let fps = 0
 
@@ -50,8 +49,6 @@ function Update() {
     renderer.render()
     requestAnimationFrame(Update)
 }
-
-// setInterval(Update, 0)
 
 setInterval(() => {
     console.log("fps:" + fps);
