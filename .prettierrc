@@ -3,22 +3,5 @@
     "tabWidth": 4,
     "semi": false,
     "singleQuote": true,
-    "plugins": ["@trivago/prettier-plugin-sort-imports"],
-    "importOrder": [
-        "<THIRD_PARTY_MODULES>",
-
-        "^~/core/(.*)$",
-        "^~/processes/(.*)$",
-        "^~/pages/(.*)$",
-        "^~/widgets/(.*)$",
-        "^~/features/(.*)$",
-        "^~/entities/(.*)$",
-        "^~/shared/(.*)$",
-        "^~/(.*)$",
-
-        "^[./]",
-        "^[../]"
-    ],
-    "importOrderSeparation": true,
-    "importOrderSortSpecifiers": true
+    "useTabs": true
 }

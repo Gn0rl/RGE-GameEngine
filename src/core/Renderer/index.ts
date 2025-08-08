@@ -1,15 +1,13 @@
-import { Camera } from "../Camera"
-import fsSource from "./shaders/frag.glsl"
-import vsSource from "./shaders/vert.glsl"
-import type { GameObject } from "../GameObject"
-import { loadTexture } from "./loadTexture"
+import { Camera } from '../Camera'
+import fsSource from './shaders/frag.glsl'
+import vsSource from './shaders/vert.glsl'
+import type { GameObject } from '../GameObject'
+import { loadTexture } from './loadTexture'
 
-import noImage from "../../../noImage.png"
+import noImage from '../../../noImage.png'
 
 export class Renderer {
-    app: WebGLRenderingContext
-
-    camera: Camera
+    private app: WebGLRenderingContext
 
     private shaderProgram: WebGLProgram
     private vertexBuffer: WebGLBuffer
@@ -17,6 +15,8 @@ export class Renderer {
     private resScale: number
     private textureCoordBuffer: WebGLBuffer
     private textures: Record<string, WebGLTexture>
+
+    public camera: Camera
 
     constructor(camera: Camera) {
         this.camera = camera
@@ -31,16 +31,16 @@ export class Renderer {
         if (!gl) {
             throw new Error('WebGL not supported in this browser')
         }
-        
+
         this.app = gl
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER)
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-        
-        if(vertexShader && fragmentShader) {
+
+        if (vertexShader && fragmentShader) {
             gl.shaderSource(vertexShader, vsSource)
             gl.compileShader(vertexShader)
-            
+
             gl.shaderSource(fragmentShader, fsSource)
             gl.compileShader(fragmentShader)
         } else {
@@ -59,11 +59,11 @@ export class Renderer {
         this.colorBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
 
-        this.textureCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
+        this.textureCoordBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer)
 
         this.textures = {
-            nothing: loadTexture(this.app, noImage)
+            nothing: loadTexture(this.app, noImage),
         }
 
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -78,100 +78,146 @@ export class Renderer {
 
     async loadTextures(textures: Record<string, string>) {
         const textureNames = Object.keys(textures)
-        for(let i = 0; i < textureNames.length; i++) {
-            this.textures[textureNames[i]] = loadTexture(this.app, textures[textureNames[i]])
+        for (let i = 0; i < textureNames.length; i++) {
+            this.textures[textureNames[i]] = loadTexture(
+                this.app,
+                textures[textureNames[i]]
+            )
         }
     }
 
-    render() {
+    async render() {
         const gl = this.app
         gl.clear(gl.COLOR_BUFFER_BIT)
         gl.useProgram(this.shaderProgram)
-        
+
         const objects = this.camera.scene.objects
         const batches: Record<string, GameObject[]> = {}
 
         objects.forEach((object) => {
-            const textureKey = object.texture || 'nothing';
-            if (!batches[textureKey]) batches[textureKey] = [];
-            batches[textureKey].push(object);
+            const textureKey = object.texture || 'nothing'
+            if (!batches[textureKey]) batches[textureKey] = []
+            batches[textureKey].push(object)
         })
 
         const matrix = new Float32Array([
-            1, 0, 0, 0,
-            0, this.resScale, 0, 0,
-            0, 0, 1, 0,
-            -this.camera.posX, -this.camera.posY * this.resScale, 0, 1
-        ]);
-        const uMatrix = gl.getUniformLocation(this.shaderProgram, 'matrix');
+            1,
+            0,
+            0,
+            0,
+            0,
+            this.resScale,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -this.camera.posX,
+            -this.camera.posY * this.resScale,
+            0,
+            1,
+        ])
+        const uMatrix = gl.getUniformLocation(this.shaderProgram, 'matrix')
         gl.uniformMatrix4fv(uMatrix, false, matrix)
 
-        
-            const position = gl.getAttribLocation(this.shaderProgram, 'vertexPosition');
-        const texCoord = gl.getAttribLocation(this.shaderProgram, 'textureCoord');
+        const position = gl.getAttribLocation(
+            this.shaderProgram,
+            'vertexPosition'
+        )
+        const texCoord = gl.getAttribLocation(
+            this.shaderProgram,
+            'textureCoord'
+        )
 
         Object.keys(batches).forEach((textureKey) => {
             const vertices: number[] = []
             const textureCoords: number[] = []
-            batches[textureKey].forEach(obj => {
+            batches[textureKey].forEach((obj) => {
                 vertices.push(
-                    obj.posX - obj.size, obj.posY + obj.size, // A
-                    obj.posX - obj.size, obj.posY - obj.size, // B
-                    obj.posX + obj.size, obj.posY - obj.size, // C
-                    
-                    //2 tringle
-                    obj.posX - obj.size, obj.posY + obj.size, // A
-                    obj.posX + obj.size, obj.posY - obj.size, // C
-                    obj.posX + obj.size, obj.posY + obj.size  // D
-                )
-                if(obj.flipX) {
-                    textureCoords.push(
-                        1.0, 0.0,
-                        1.0, 1.0,
-                        0.0, 1.0,
-                        
-                        1.0, 0.0,
-                        0.0, 1.0,
-                        0.0, 0.0
-                )}
-                else {
-                    textureCoords.push(
-                        0.0, 0.0,
-                        0.0, 1.0,
-                        1.0, 1.0,
+                    obj.posX - obj.size.x,
+                    obj.posY + obj.size.y, // A
+                    obj.posX - obj.size.x,
+                    obj.posY - obj.size.y, // B
+                    obj.posX + obj.size.x,
+                    obj.posY - obj.size.y, // C
 
-                        0.0, 0.0,
-                        1.0, 1.0,
-                        1.0, 0.0
+                    obj.posX - obj.size.x,
+                    obj.posY + obj.size.y, // A
+                    obj.posX + obj.size.x,
+                    obj.posY - obj.size.y, // C
+                    obj.posX + obj.size.x,
+                    obj.posY + obj.size.y // D
+                )
+                if (obj.flipX) {
+                    textureCoords.push(
+                        1.0,
+                        0.0,
+                        1.0,
+                        1.0,
+                        0.0,
+                        1.0,
+
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                    )
+                } else {
+                    textureCoords.push(
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
+
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
                     )
                 }
-
             })
 
-            gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(position);
+            gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(position)
 
-            gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(texCoord);
+            gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(texCoord)
 
             // Вершины
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(vertices),
+                gl.STATIC_DRAW
+            )
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
 
             // Текстурные координаты
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-            gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer)
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(textureCoords),
+                gl.STATIC_DRAW
+            )
+            gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 0, 0)
 
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.textures[textureKey] || this.textures.nothing);
-            const sampler = gl.getUniformLocation(this.shaderProgram, 'sampler');
-            gl.uniform1i(sampler, 0);
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(
+                gl.TEXTURE_2D,
+                this.textures[textureKey] || this.textures.nothing
+            )
+            const sampler = gl.getUniformLocation(this.shaderProgram, 'sampler')
+            gl.uniform1i(sampler, 0)
 
-            const vertexCount = vertices.length / 2; // 2 компонента на вершину
-            gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+            const vertexCount = vertices.length / 2
+            gl.drawArrays(gl.TRIANGLES, 0, vertexCount)
         })
     }
-
 }

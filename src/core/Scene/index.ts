@@ -1,16 +1,16 @@
-import { GameObject } from "../GameObject"
+import { GameObject } from '../GameObject'
 
 export class Scene {
-    objects: Array<GameObject>
-    
+    public objects: Array<GameObject>
+
     constructor() {
-        this.objects = [];
+        this.objects = []
     }
 
     addObject(object: GameObject | Array<GameObject>) {
-        if(Array.isArray(object)){
+        if (Array.isArray(object)) {
             object.forEach((obj) => {
-                this.objects.push(obj);
+                this.objects.push(obj)
             })
 
             return this
