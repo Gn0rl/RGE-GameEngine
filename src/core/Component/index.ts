@@ -1,13 +1,11 @@
 export class Component {
-    public name: string;
-    public isEnabled: boolean;
+	public isEnabled: boolean
 
-    constructor(name: string) {
-        this.isEnabled = true
-        this.name = name
-    }
+	constructor() {
+		this.isEnabled = true
+	}
 
-    start(): void {}
+	start(): void {}
 
-    update(): void {}
+	update(): void {}
 }

@@ -1,18 +1,39 @@
-import { Scene } from './core/Scene'
-import { GameObject } from './core/GameObject'
-import { Renderer } from './core/Renderer'
-import { Camera } from './core/Camera'
-import { Input } from './core/Input'
+import { Scene, GameObject, Renderer, Camera, Input } from './core'
 
 import image from '../image.png'
+import { Component } from './core/Component'
 
 let input = new Input()
 
-let scene = new Scene()
+class MovementComponent extends Component {
+	player: GameObject
+	constructor(player: GameObject) {
+		super()
+
+		this.player = player
+	}
+
+	update() {
+		if (input.pressed['KeyD']) {
+			this.player.posX += 0.01
+		}
+		if (input.pressed['KeyA']) {
+			this.player.posX -= 0.01
+		}
+		if (input.pressed['KeyS']) {
+			this.player.posY -= 0.01
+		}
+		if (input.pressed['KeyW']) {
+			this.player.posY += 0.01
+		}
+	}
+}
 
 let player = new GameObject('player', 0, 0, { x: 0.1, y: 0.1 })
 
-scene.addObject(player)
+player.addComponent(new MovementComponent(player))
+
+let scene = new Scene().addObject(player)
 
 let camera = new Camera('camera', scene)
 
@@ -35,18 +56,7 @@ for (let i = 0; i <= 1000; i++) {
 let fps = 0
 
 async function Update() {
-	if (input.pressed['KeyD']) {
-		player.posX += 0.01
-	}
-	if (input.pressed['KeyA']) {
-		player.posX -= 0.01
-	}
-	if (input.pressed['KeyS']) {
-		player.posY -= 0.01
-	}
-	if (input.pressed['KeyW']) {
-		player.posY += 0.01
-	}
+	player.update()
 
 	camera.posX = player.posX
 	camera.posY = player.posY
