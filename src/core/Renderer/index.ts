@@ -5,6 +5,7 @@ import type { GameObject } from '../GameObject'
 import { loadTexture } from './loadTexture'
 
 import noImage from '../../../noImage.png'
+import type { Scene } from '../Scene'
 
 export class Renderer {
 	private app: WebGLRenderingContext
@@ -16,10 +17,10 @@ export class Renderer {
 	private textureCoordBuffer: WebGLBuffer
 	private textures: Record<string, WebGLTexture>
 
-	public camera: Camera
+	public scene: Scene
 
-	constructor(camera: Camera) {
-		this.camera = camera
+	constructor(scene: Scene) {
+		this.scene = scene
 
 		this.resScale = window.innerWidth / window.innerHeight
 
@@ -33,6 +34,9 @@ export class Renderer {
 		}
 
 		this.app = gl
+
+		gl.enable(gl.BLEND)
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
 		const vertexShader = gl.createShader(gl.VERTEX_SHADER)
 		const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
@@ -72,16 +76,20 @@ export class Renderer {
 	}
 
 	changeCamera(camera: Camera) {
-		this.camera = camera
+		this.scene.camera = camera
 		return this
 	}
 
-	async loadTextures(textures: Record<string, string>) {
+	async loadTextures(
+		textures: Record<string, { src: string; pixel?: boolean }>
+	) {
 		const textureNames = Object.keys(textures)
 		for (let i = 0; i < textureNames.length; i++) {
+			const textureInfo = textures[textureNames[i]]
 			this.textures[textureNames[i]] = loadTexture(
 				this.app,
-				textures[textureNames[i]]
+				textureInfo.src,
+				textureInfo.pixel
 			)
 		}
 	}
@@ -91,7 +99,7 @@ export class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT)
 		gl.useProgram(this.shaderProgram)
 
-		const objects = this.camera.scene.objects
+		const objects = this.scene.objects
 		const batches: Record<string, GameObject[]> = {}
 
 		objects.forEach((object) => {
@@ -113,8 +121,8 @@ export class Renderer {
 			0,
 			1,
 			0,
-			-this.camera.posX,
-			-this.camera.posY * this.resScale,
+			-this.scene.camera.posX,
+			-this.scene.camera.posY * this.resScale,
 			0,
 			1,
 		])

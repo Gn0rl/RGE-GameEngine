@@ -1,23 +1,26 @@
+import type { Camera } from '../Camera'
 import { GameObject } from '../GameObject'
 
 export class Scene {
-    public objects: Array<GameObject>
+	public objects: Array<GameObject>
+	public camera: GameObject
 
-    constructor() {
-        this.objects = []
-    }
+	constructor(camera: Camera) {
+		this.camera = camera
+		this.objects = []
+	}
 
-    addObject(object: GameObject | Array<GameObject>) {
-        if (Array.isArray(object)) {
-            object.forEach((obj) => {
-                this.objects.push(obj)
-            })
+	addObject(object: GameObject | Array<GameObject>) {
+		if (Array.isArray(object)) {
+			object.forEach((obj) => {
+				this.objects.push(obj)
+			})
 
-            return this
-        }
+			return this
+		}
 
-        this.objects.push(object)
+		this.objects.push(object)
 
-        return this
-    }
+		return this
+	}
 }
