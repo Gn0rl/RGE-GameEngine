@@ -13,7 +13,6 @@ export class Renderer {
 	private shaderProgram: WebGLProgram
 	private vertexBuffer: WebGLBuffer
 	private colorBuffer: WebGLBuffer
-	private resScale: number
 	private textureCoordBuffer: WebGLBuffer
 	private textures: Record<string, WebGLTexture>
 
@@ -21,8 +20,6 @@ export class Renderer {
 
 	constructor(scene: Scene) {
 		this.scene = scene
-
-		this.resScale = window.innerWidth / window.innerHeight
 
 		const canvas = document.getElementById('view') as HTMLCanvasElement
 		canvas.width = window.innerWidth
@@ -109,20 +106,20 @@ export class Renderer {
 		})
 
 		const matrix = new Float32Array([
+			1 / globalThis.innerWidth,
+			0,
+			0,
+			0,
+			0,
+			1 / globalThis.innerHeight,
+			0,
+			0,
+			0,
+			0,
 			1,
 			0,
-			0,
-			0,
-			0,
-			this.resScale,
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			-this.scene.camera.posX,
-			-this.scene.camera.posY * this.resScale,
+			(-1 * this.scene.camera.posX) / globalThis.innerWidth,
+			(-1 * this.scene.camera.posY) / globalThis.innerHeight,
 			0,
 			1,
 		])

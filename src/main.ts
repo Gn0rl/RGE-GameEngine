@@ -16,21 +16,21 @@ class MovementComponent extends Component {
 
 	update() {
 		if (input.pressed['KeyD']) {
-			this.player.posX += 0.02
+			this.player.posX += 2
 		}
 		if (input.pressed['KeyA']) {
-			this.player.posX -= 0.02
+			this.player.posX -= 2
 		}
 		if (input.pressed['KeyS']) {
-			this.player.posY -= 0.01
+			this.player.posY -= 2
 		}
 		if (input.pressed['KeyW']) {
-			this.player.posY += 0.01
+			this.player.posY += 2
 		}
 	}
 }
 
-let player = new GameObject('player', 0, 0, { x: 0.1, y: 0.1 })
+let player = new GameObject('player', 0, 0, { x: 200, y: 200 })
 
 player.addComponent(new MovementComponent(player))
 
@@ -57,7 +57,13 @@ for (let i = 0; i <= 1000; i++) {
 }
 
 scene.addObject(
-	new GameObject(`temple`, -2, 0, { x: 16 / 16, y: 9 / 16 }, 'pixel')
+	new GameObject(
+		`temple`,
+		-2,
+		0,
+		{ x: globalThis.innerWidth, y: globalThis.innerHeight },
+		'pixel'
+	)
 )
 
 let fps = 0
