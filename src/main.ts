@@ -3,36 +3,42 @@ import { Scene, GameObject, Renderer, Camera, Input } from './core'
 import image from '../image.png'
 import pixel from '../pixelTest.png'
 import { Component } from './core/Component'
+import { Physical } from './components/Physical'
 
 let input = new Input()
 
+let playerSpeed = 1
+
 class MovementComponent extends Component {
-	player: GameObject
-	constructor(player: GameObject) {
+	playerPhysics: Physical
+	constructor(playerPhysics: Physical) {
 		super()
 
-		this.player = player
+		this.playerPhysics = playerPhysics
 	}
 
 	update() {
 		if (input.pressed['KeyD']) {
-			this.player.posX += 2
+			this.playerPhysics.addForce({ x: playerSpeed, y: 0 })
 		}
 		if (input.pressed['KeyA']) {
-			this.player.posX -= 2
+			this.playerPhysics.addForce({ x: -playerSpeed, y: 0 })
 		}
 		if (input.pressed['KeyS']) {
-			this.player.posY -= 2
+			this.playerPhysics.addForce({ x: 0, y: -playerSpeed })
 		}
 		if (input.pressed['KeyW']) {
-			this.player.posY += 2
+			this.playerPhysics.addForce({ x: 0, y: playerSpeed })
 		}
 	}
 }
 
 let player = new GameObject('player', 0, 0, { x: 200, y: 200 })
 
-player.addComponent(new MovementComponent(player))
+const playerPhysics = new Physical(player, 0, 0)
+player.addComponent(playerPhysics)
+const movement = new MovementComponent(playerPhysics)
+player.addComponent(movement)
 
 let camera = new Camera('camera')
 let scene = new Scene(camera).addObject(player)
