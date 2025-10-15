@@ -37,6 +37,7 @@ let player = new GameObject('player', 0, 0, { x: 200, y: 200 })
 
 const playerPhysics = new Physical(player, 0, 0)
 player.addComponent(playerPhysics)
+
 const movement = new MovementComponent(playerPhysics)
 player.addComponent(movement)
 
@@ -72,23 +73,24 @@ scene.addObject(
 	)
 )
 
-let fps = 0
+let then = 0
 
-async function Update() {
+const fpsCounter = document.getElementById('fps')
+
+async function Update(now: number) {
+	now *= 0.001
+	const deltaTime = now - then
+	then = now
+	const fps = 1 / deltaTime
+	fpsCounter!.textContent = `fps: ${fps.toFixed(1)}`
+
 	player.update()
 
 	camera.posX = player.posX
 	camera.posY = player.posY
 
-	renderer.render().then(() => {
-		fps++
-	})
+	renderer.render()
 	requestAnimationFrame(Update)
 }
-
-setInterval(() => {
-	console.log('fps:' + fps)
-	fps = 0
-}, 1000)
 
 requestAnimationFrame(Update)
