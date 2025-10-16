@@ -1,16 +1,15 @@
 import { Component, GameObject } from '@/core'
 
 export class Physical extends Component {
+	public object: GameObject
 	public mass: number
 	public gravityScale: number
-	public object: GameObject
-
-	private force: { x: number; y: number }
+	private _force: { x: number; y: number }
 
 	constructor(object: GameObject, mass: number, gravityScale: number) {
 		super()
 
-		this.force = { x: 0, y: 0 }
+		this._force = { x: 0, y: 0 }
 
 		this.object = object
 		this.gravityScale = gravityScale
@@ -18,14 +17,18 @@ export class Physical extends Component {
 	}
 
 	update() {
-		this.force.y -= this.gravityScale
+		this._force.y -= this.gravityScale
 
-		this.object.posX += this.force.x
-		this.object.posY += this.force.y
+		this.object.posX += this._force.x
+		this.object.posY += this._force.y
+	}
+
+	get force(): { x: number; y: number } {
+		return this._force;
 	}
 
 	addForce(force: { x: number; y: number }) {
-		this.force.x += force.x
-		this.force.y += force.y
+		this._force.x += force.x
+		this._force.y += force.y
 	}
 }

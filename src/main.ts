@@ -7,7 +7,7 @@ import { Physical } from './components/Physical'
 
 let input = new Input()
 
-let playerSpeed = 1
+let playerSpeed = 10
 
 class MovementComponent extends Component {
 	playerPhysics: Physical
@@ -18,6 +18,8 @@ class MovementComponent extends Component {
 	}
 
 	update() {
+		this.playerPhysics.addForce({x: -this.playerPhysics.force.x, y: -this.playerPhysics.force.y})
+
 		if (input.pressed['KeyD']) {
 			this.playerPhysics.addForce({ x: playerSpeed, y: 0 })
 		}
@@ -55,9 +57,9 @@ for (let i = 0; i <= 1000; i++) {
 	scene.addObject(
 		new GameObject(
 			`obj${i}`,
-			Math.random() * 2 - 1,
-			Math.random() * 2 - 1,
-			{ x: 0.1, y: 0.1 },
+			Math.random() * 200 - 100,
+			Math.random() * 200 - 100,
+			{ x: 100, y: 100 },
 			'test'
 		)
 	)
